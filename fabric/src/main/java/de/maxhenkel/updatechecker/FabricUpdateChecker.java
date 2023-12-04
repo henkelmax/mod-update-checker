@@ -23,13 +23,13 @@ public class FabricUpdateChecker {
         UpdateResponse response = check(modId);
         switch (response.getState()) {
             case UP_TO_DATE:
-                logger.info("Mod '{}' is up to date (Version {})", modId, response.getInstalledVersion());
+                logger.info("Mod '{}' is up to date ({})", modId, response.getInstalledVersion());
                 break;
             case UPDATE_AVAILABLE:
                 response.getUpdate().ifPresent(update -> printUpdate(modId, logger, response, update));
                 break;
             case AHEAD:
-                logger.info("Mod '{}' is ahead (Version {})", modId, response.getInstalledVersion());
+                logger.info("Mod '{}' is ahead ({})", modId, response.getInstalledVersion());
                 break;
             case ERROR:
                 logger.info("Error checking updates for mod '{}': {}", modId, response.getError().map(Throwable::getMessage).orElse("Unknown error"));
