@@ -10,6 +10,6 @@
     ]
   },
   "custom": {
-    "updateUrl": "http://localhost:8088/check/fabric/test"
+    "updateUrl": "https://update.maxhenkel.de/check/fabric/test"
   }
 }
