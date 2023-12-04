@@ -14,7 +14,7 @@ repositories {
 }
 dependencies {
     // Use shadow or include to embed the dependency in your mod
-    implementation "de.maxhenkel:update-checker:1.0.0+fabric"
+    implementation "de.maxhenkel.updatechecker:mod-update-checker:1.0.0+fabric"
 }
 ```
 
