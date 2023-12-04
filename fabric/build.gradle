@@ -1,0 +1,80 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+group = maven_group
+archivesBaseName = archives_base_name
+version = "${library_version}+fabric"
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.fabricmc.net/' }
+}
+
+dependencies {
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+
+    shadow project(':core')
+
+    shadow "org.json:json:${json_version}"
+    shadow "com.vdurmont:semver4j:${semver4j_version}"
+    implementation "org.apache.logging.log4j:log4j-api:${log4j_version}"
+
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = 'UTF-8'
+    it.options.release = 8
+}
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+    archiveClassifier = ''
+    relocate 'org.json', 'de.maxhenkel.updatechecker.json'
+    relocate 'com.vdurmont.semver4j', 'de.maxhenkel.updatechecker.semver4j'
+    dependencies {
+        exclude(dependency('com.google.code.findbugs:jsr305'))
+        exclude(dependency('org.apache.logging.log4j:log4j-api'))
+    }
+}
+build.dependsOn(shadowJar)
+
+tasks.register('sourcesJar', Jar) {
+    dependsOn classes
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+    from project(":core").sourceSets.main.allSource
+}
+
+publishing {
+    publications {
+        modUpdateCheckerFabric(MavenPublication) {
+            artifactId archives_base_name
+            artifact(shadowJar) {
+                builtBy build
+                classifier null
+            }
+            artifact(sourcesJar) {
+                builtBy build
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'henkelmax.public'
+            url = 'https://maven.maxhenkel.de/repository/public'
+            credentials {
+                username System.getenv('MAVEN_USERNAME')
+                password System.getenv('MAVEN_PASSWORD')
+            }
+        }
+    }
+}

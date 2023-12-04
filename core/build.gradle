@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group = maven_group
+archivesBaseName = archives_base_name
+version = library_version
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    withSourcesJar()
+}
+
+test {
+    useJUnitPlatform()
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://libraries.minecraft.net' }
+}
+
+dependencies {
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+
+    implementation "org.json:json:${json_version}"
+    implementation "com.vdurmont:semver4j:${semver4j_version}"
+}
+
+publishing {
+    publications {
+        modUpdateCheckerCore(MavenPublication) {
+            artifactId archives_base_name
+            artifact(jar) {
+                builtBy build
+                classifier null
+            }
+            artifact sourcesJar
+        }
+    }
+    repositories {
+        maven {
+            name = 'henkelmax.public'
+            url = 'https://maven.maxhenkel.de/repository/public'
+            credentials {
+                username System.getenv('MAVEN_USERNAME')
+                password System.getenv('MAVEN_PASSWORD')
+            }
+        }
+    }
+}
