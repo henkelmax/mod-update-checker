@@ -19,7 +19,6 @@ test {
 
 repositories {
     mavenCentral()
-    maven { url = 'https://libraries.minecraft.net' }
 }
 
 dependencies {
@@ -50,4 +49,9 @@ publishing {
             }
         }
     }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = 'UTF-8'
+    it.options.release = 8
 }

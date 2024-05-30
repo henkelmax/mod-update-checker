@@ -16,6 +16,8 @@ version = "${library_version}+${minecraft_version}"
 repositories {
     mavenCentral()
     maven { url = 'https://maven.fabricmc.net/' }
+    maven { url = 'https://maven.terraformersmc.com/releases' }
+    mavenLocal()
 }
 
 runClient.doFirst {
@@ -26,6 +28,9 @@ dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.officialMojangMappings()
     modCompileOnly "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modRuntimeOnly "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+    modApi "com.terraformersmc:modmenu:${modmenu_version}"
 
     implementation project(':core')
     implementation project(':fabric')

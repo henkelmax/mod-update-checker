@@ -5,6 +5,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,24 +17,29 @@ import java.util.stream.Collectors;
 
 public class UpdateChecker {
 
-    public static UpdateResponse checkUpdates(String updateUrl, String minecraftVersion, String modVersion) {
+    public static UpdateResponse checkUpdates(String modId, String updateUrl, String minecraftVersion, String modVersion) {
         try {
-            return checkUpdatesInternal(updateUrl, minecraftVersion, modVersion);
+            return checkUpdatesInternal(modId, updateUrl, minecraftVersion, modVersion);
         } catch (Throwable t) {
-            return UpdateResponse.createWithError(modVersion, t);
+            return UpdateResponse.createWithError(modId, modVersion, t);
         }
     }
 
-    private static UpdateResponse checkUpdatesInternal(String updateUrl, String minecraftVersion, String modVersionString) throws IOException, JSONException {
+    private static UpdateResponse checkUpdatesInternal(String modId, String updateUrl, String minecraftVersion, String modVersionString) throws IOException, JSONException {
         Semver modVersion = new Semver(modVersionString);
         String response = httpGet(updateUrl, minecraftVersion);
 
         JSONObject responseJson = new JSONObject(response);
 
+        String homepage = null;
+        if (responseJson.has("homepage")) {
+            homepage = responseJson.getString("homepage");
+        }
+
         JSONObject versions = responseJson.getJSONObject("versions");
 
         if (!versions.has(minecraftVersion)) {
-            return UpdateResponse.createWithState(modVersionString, UpdateState.UNKNOWN);
+            return UpdateResponse.createWithState(modId, modVersionString, UpdateState.UNKNOWN);
         }
 
         JSONObject mcVersion = versions.getJSONObject(minecraftVersion);
@@ -46,28 +52,28 @@ public class UpdateChecker {
             JSONObject recommendedJson = mcVersion.getJSONObject("recommended");
             Semver recommended = new Semver(recommendedJson.getString("version"));
             if (recommended.equals(modVersion)) {
-                return UpdateResponse.createWithState(modVersionString, UpdateState.UP_TO_DATE);
+                return UpdateResponse.createWithState(modId, modVersionString, UpdateState.UP_TO_DATE);
             } else if (modVersion.compareTo(recommended) < 0) {
-                return UpdateResponse.createWithUpdate(modVersionString, fromJson(recommendedJson));
+                return UpdateResponse.createWithUpdate(modId, modVersionString, fromJson(recommendedJson, homepage));
             }
         }
 
         if (latest.equals(modVersion)) {
-            return UpdateResponse.createWithState(modVersionString, UpdateState.UP_TO_DATE);
+            return UpdateResponse.createWithState(modId, modVersionString, UpdateState.UP_TO_DATE);
         } else if (modVersion.compareTo(latest) > 0) {
-            return UpdateResponse.createWithState(modVersionString, UpdateState.AHEAD);
+            return UpdateResponse.createWithState(modId, modVersionString, UpdateState.AHEAD);
         }
 
-        return UpdateResponse.createWithUpdate(modVersionString, fromJson(latestJson));
+        return UpdateResponse.createWithUpdate(modId, modVersionString, fromJson(latestJson, homepage));
     }
 
-    private static Update fromJson(JSONObject jsonObject) {
+    private static Update fromJson(JSONObject jsonObject, @Nullable String defaultUpdateUrl) {
         JSONArray changelogJson = jsonObject.getJSONArray("changelog");
         String[] changelog = new String[changelogJson.length()];
         for (int i = 0; i < changelog.length; i++) {
             changelog[i] = changelogJson.getString(i);
         }
-        String[] downloadLinks = new String[0];
+        String[] downloadLinks = defaultUpdateUrl == null ? new String[0] : new String[]{defaultUpdateUrl};
         if (jsonObject.has("downloadLinks")) {
             JSONArray downloadLinksJson = jsonObject.getJSONArray("downloadLinks");
             downloadLinks = new String[downloadLinksJson.length()];

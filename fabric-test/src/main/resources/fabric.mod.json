@@ -7,9 +7,14 @@
   "entrypoints": {
     "main": [
       "de.maxhenkel.updatechecker.TestMod"
+    ],
+    "modmenu": [
+      "de.maxhenkel.updatechecker.modmenu.UpdateCheckerModMenuApi"
     ]
   },
   "custom": {
-    "updateUrl": "https://update.maxhenkel.de/check/fabric/test"
+    "updater": {
+      "updateUrl": "https://update.maxhenkel.de/check/fabric/test"
+    }
   }
 }
