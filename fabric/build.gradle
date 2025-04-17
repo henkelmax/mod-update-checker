@@ -32,7 +32,6 @@ dependencies {
 
     shadow "org.json:json:${json_version}"
     shadow "com.vdurmont:semver4j:${semver4j_version}"
-    implementation "org.apache.logging.log4j:log4j-api:${log4j_version}"
 
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 }
